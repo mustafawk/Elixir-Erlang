@@ -51,6 +51,12 @@ defmodule CounterWeb.CounterLive do
       >
         Submit
       </button>
+
+      <button phx-click="reset" type="button"
+        class="px-4 py-4 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow transition"
+      >
+        Reset
+      </button>
     </.form>
   </div>
   """
@@ -64,12 +70,13 @@ end
   def handle_event("dec", _params, socket) do
     cond do
       socket.assigns.count <= 0 ->
-        {:noreply, assign(socket, :count, 0)}
+        {:noreply, assign(socket, :count, socket.assigns.count + 0)}
+
      socket.assigns.count > 0 ->
         {:noreply, assign(socket, :count, socket.assigns.count - 1)}
-        put_flash(socket, :error, "Count cannot go below zero")
       true ->
-        :ok
+        {:noreply, put_flash(socket, :error, "Count cannot go below zero")}
+
     end
   end
 
@@ -77,12 +84,15 @@ end
     {number,_} = Integer.parse(val)
     case number do
       num when num < 0 ->
-        {:noreply, put_flash(socket, :error, "Reset value cannot be negative")}
-        {:noreply, assign(socket, count: 0, reset_value: 0)}
-      num when num > 0 ->
-        {:noreply, assign(socket, count: num, reset_value: num)}
+        {:noreply, assign(socket, count: 0, reset_value: "")}
+      num when num >= 0 ->
+        {:noreply, assign(socket, count: num, reset_value: "")}
       _ ->
         {:noreply, put_flash(socket, :error, "Invalid reset value")}
     end
+  end
+
+  def handle_event("reset",_params, socket) do
+    {:noreply, assign(socket, :count, socket.assigns.count - socket.assigns.count)}
   end
 end
